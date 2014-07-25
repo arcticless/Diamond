@@ -241,6 +241,10 @@ class DiskSpaceCollector(diamond.collector.Collector):
                     blocks_free + (blocks_total - blocks_free)) * 100
                 self.publish_gauge(metric_name, metric_value, 2)
 
+                metric_name = '%s.%s_percentused' % (name, unit)
+                metric_value = 100 - metric_value
+                self.publish_gauge(metric_name, metric_value, 2)
+                
                 metric_name = '%s.%s_used' % (name, unit)
                 metric_value = float(block_size) * float(
                     blocks_total - blocks_free)
