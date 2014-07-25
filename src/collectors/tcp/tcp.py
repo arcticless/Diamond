@@ -190,6 +190,9 @@ class TCPCollector(diamond.collector.Collector):
     GAUGES = [
         'CurrEstab',
         'MaxConn',
+        'TW',
+        'InOctets',
+        'OutOctets'
     ]
 
     def __init__(self, config, handlers):
@@ -211,11 +214,7 @@ class TCPCollector(diamond.collector.Collector):
         config = super(TCPCollector, self).get_default_config()
         config.update({
             'path':             'tcp',
-            'allowed_names':    'ListenOverflows, ListenDrops, TCPLoss, '
-            + 'TCPTimeouts, TCPFastRetrans, TCPLostRetransmit, '
-            + 'TCPForwardRetrans, TCPSlowStartRetrans, CurrEstab, '
-            + 'TCPAbortOnMemory, TCPBacklogDrop, AttemptFails, '
-            + 'EstabResets, InErrs, ActiveOpens, PassiveOpens',
+            'allowed_names':    'CurrEstab,TW,InOctets,OutOctets',
         })
         return config
 
@@ -229,6 +228,8 @@ class TCPCollector(diamond.collector.Collector):
 
             header = ''
             data = ''
+            header2 = ''
+            data2 = ''
 
             # Seek the file for the lines that start with Tcp
             file = open(filepath)
@@ -248,6 +249,8 @@ class TCPCollector(diamond.collector.Collector):
                 if line.startswith("Tcp"):
                     header = line
                     data = file.readline()
+                    header2 = file.readline()
+                    data2 = file.readline()
                     break
             file.close()
 
@@ -255,12 +258,19 @@ class TCPCollector(diamond.collector.Collector):
             if header == '' or data == '':
                 self.log.error('%s has no lines with Tcp', filepath)
                 continue
+            if header2 == '' or data2 == '':
+                self.log.error('%s has no lines with ip_in_out', filepath)
+                continue
 
             header = header.split()
             data = data.split()
+            header2 = header2.split()
+            data2 = data2.split()
 
             for i in xrange(1, len(header)):
                 metrics[header[i]] = data[i]
+            for i in xrange(1, len(header2)):
+                metrics[header2[i]] = data2[i]
 
         for metric_name in metrics.keys():
             if (len(self.config['allowed_names']) > 0
