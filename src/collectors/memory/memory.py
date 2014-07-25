@@ -72,6 +72,11 @@ class MemoryCollector(diamond.collector.Collector):
         """
         Collect memory stats
         """
+        memfree=0
+        memtotal=1
+        memcached=0
+        membuffered=0
+
         if os.access(self.PROC, os.R_OK):
             file = open(self.PROC)
             data = file.read()
@@ -91,6 +96,15 @@ class MemoryCollector(diamond.collector.Collector):
                         value = diamond.convertor.binary.convert(value=value,
                                                                  oldUnit=units,
                                                                  newUnit=unit)
+                        if name == 'MemFree':
+                                memfree = value
+                        if name == 'Cached':
+                                memcached = value
+                        if name == 'Buffers':
+                                membuffered = value
+                        if name == 'MemTotal':
+                                memtotal = value
+
                         self.publish(name, value, metric_type='GAUGE')
 
                         # TODO: We only support one unit node here. Fix it!
@@ -98,6 +112,7 @@ class MemoryCollector(diamond.collector.Collector):
 
                 except ValueError:
                     continue
+            self.publish('MemPercUsed', (1-(memfree+memcached+membuffered)/memtotal)*100, metric_type='GAUGE')
             return True
         else:
             if not psutil:
