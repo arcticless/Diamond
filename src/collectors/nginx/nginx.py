@@ -14,7 +14,7 @@ add a file to /etc/nginx/sites-enabled/ (on Ubuntu) with the
 following content:
 <pre>
   server {
-      listen 127.0.0.1:8080;
+      listen 127.0.0.1:8088;
       server_name localhost;
       location /nginx_status {
           stub_status on;
@@ -46,7 +46,7 @@ class NginxCollector(diamond.collector.Collector):
     def get_default_config(self):
         default_config = super(NginxCollector, self).get_default_config()
         default_config['req_host'] = 'localhost'
-        default_config['req_port'] = 8080
+        default_config['req_port'] = 8088
         default_config['req_path'] = '/nginx_status'
         default_config['path'] = 'nginx'
         return default_config
