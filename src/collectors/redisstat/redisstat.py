@@ -77,7 +77,8 @@ class RedisCollector(diamond.collector.Collector):
              'process.uptime': 'uptime_in_seconds',
              'pubsub.channels': 'pubsub_channels',
              'pubsub.patterns': 'pubsub_patterns',
-             'slaves.connected': 'connected_slaves'}
+             'slaves.connected': 'connected_slaves'
+             'fight.queue.length': 'queue_length'} #added this line to show fight queue
     _RENAMED_KEYS = {'last_save.changes_since': 'rdb_changes_since_last_save',
                      'last_save.time': 'rdb_last_save_time'}
 
@@ -220,28 +221,12 @@ class RedisCollector(diamond.collector.Collector):
         client = self._client(host, port, auth)
         if client is None:
             return None
-
+        
+        queue_length = client.llen('fight.fightRequestQueue')
         info = client.info()
-        fight.queue = client.llen(fight.fightRequestQueue)
+        info['fight.queue.length'] = queue_length
         del client
         return info
-        
-    def _get_fight_queue_length(self, host, port, auth):
-        """Return info dict from specified Redis instance
-
-:param str host: redis host
-:param int port: redis port
-:rtype: integer
-
-        """
-
-        client = self._client(host, port, auth)
-        if client is None:
-            return None
-            
-        queue = client.llen(fight.fightRequestQueue)
-        del client
-        return queue
 
     def collect_instance(self, nick, host, port, auth):
         """Collect metrics from a single Redis instance
@@ -265,7 +250,6 @@ class RedisCollector(diamond.collector.Collector):
         for key in self._KEYS:
             if self._KEYS[key] in info:
                 data[key] = info[self._KEYS[key]]
-
         # Iterate over renamed keys for 2.6 support
         for key in self._RENAMED_KEYS:
             if self._RENAMED_KEYS[key] in info:
@@ -278,7 +262,6 @@ class RedisCollector(diamond.collector.Collector):
             if db in info:
                 for key in info[db]:
                     data['%s.%s' % (db, key)] = info[db][key]
-
         # Time since last save
         for key in ['last_save_time', 'rdb_last_save_time']:
             if key in info:
