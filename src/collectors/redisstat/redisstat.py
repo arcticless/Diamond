@@ -231,7 +231,7 @@ class RedisCollector(diamond.collector.Collector):
 
 :param str host: redis host
 :param int port: redis port
-:rtype: dict
+:rtype: integer
 
         """
 
