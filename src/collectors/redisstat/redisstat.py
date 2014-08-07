@@ -222,8 +222,26 @@ class RedisCollector(diamond.collector.Collector):
             return None
 
         info = client.info()
+        fight.queue = client.llen(fight.fightRequestQueue)
         del client
         return info
+        
+    def _get_fight_queue_length(self, host, port, auth):
+        """Return info dict from specified Redis instance
+
+:param str host: redis host
+:param int port: redis port
+:rtype: dict
+
+        """
+
+        client = self._client(host, port, auth)
+        if client is None:
+            return None
+            
+        queue = client.llen(fight.fightRequestQueue)
+        del client
+        return queue
 
     def collect_instance(self, nick, host, port, auth):
         """Collect metrics from a single Redis instance
