@@ -214,7 +214,11 @@ class TCPCollector(diamond.collector.Collector):
         config = super(TCPCollector, self).get_default_config()
         config.update({
             'path':             'tcp',
-            'allowed_names':    'CurrEstab,TW,InOctets,OutOctets',
+            'allowed_names':    'ListenOverflows, ListenDrops, TCPLoss, '
+            'TCPTimeouts, TCPFastRetrans, TCPLostRetransmit, '
+            'TCPForwardRetrans, TCPSlowStartRetrans, CurrEstab, '
+            'TCPAbortOnMemory, TCPBacklogDrop, AttemptFails, '
+            'EstabResets, InErrs, ActiveOpens, PassiveOpens',
         })
         return config
 
