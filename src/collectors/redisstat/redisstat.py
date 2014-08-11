@@ -78,7 +78,8 @@ class RedisCollector(diamond.collector.Collector):
              'pubsub.channels': 'pubsub_channels',
              'pubsub.patterns': 'pubsub_patterns',
              'slaves.connected': 'connected_slaves',
-             'fight.queue.length': 'queue_length'} #added this line to show fight queue
+             'fight.queue.length': 'queue_length',
+             'running.fights' : 'running_fights'} #added this line to show fight queue
     _RENAMED_KEYS = {'last_save.changes_since': 'rdb_changes_since_last_save',
                      'last_save.time': 'rdb_last_save_time'}
 
@@ -222,11 +223,27 @@ class RedisCollector(diamond.collector.Collector):
         if client is None:
             return None
         
-        queue_length = client.llen('fight.fightRequestQueue')
         info = client.info()
-        info['fight.queue.length'] = queue_length
         del client
         return info
+        
+    def _get_additional_info(self, host, port, auth):
+        """Return additional_info dict from specified Redis instance
+
+:param str host: redis host
+:param int port: redis port
+:rtype: dict
+
+        """
+
+        client = self._client(host, port, auth)
+        if client is None:
+            return None
+        
+        additional_info['running.fights'] = len(client.keys('fight*'))
+        additional_info['fight.queue.length'] = client.llen('fight.fightRequestQueue')
+        del client
+        return additional_info
 
     def collect_instance(self, nick, host, port, auth):
         """Collect metrics from a single Redis instance
@@ -239,6 +256,8 @@ class RedisCollector(diamond.collector.Collector):
 
         # Connect to redis and get the info
         info = self._get_info(host, port, auth)
+        additional_info = self._get_additional_info(host, port, auth)
+        info.update(additional_info)
         if info is None:
             return
 
