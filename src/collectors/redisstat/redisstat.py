@@ -238,8 +238,8 @@ class RedisCollector(diamond.collector.Collector):
         if client is None:
             return None
         
-        additional_info['fights.running'] = len(client.keys('fight*'))
-        additional_info['fights.queue.length'] = client.llen('fight.fightRequestQueue')
+        additional_info['running_fights'] = len(client.keys('fight*'))
+        additional_info['queue_length'] = client.llen('fight.fightRequestQueue')
         return additional_info
 
     def collect_instance(self, nick, host, port, auth):
