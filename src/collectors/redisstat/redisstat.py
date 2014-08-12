@@ -220,7 +220,7 @@ class RedisCollector(diamond.collector.Collector):
         if client is None:
             return None
         
-        additional_info['running_fights'] = len(client.keys('fight*'))
+        additional_info['running_fights'] = len(client.keys('fight.fight*'))
         additional_info['queue_length'] = client.llen('fight.fightRequestQueue')
         return additional_info
 
