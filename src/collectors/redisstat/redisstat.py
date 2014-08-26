@@ -210,7 +210,7 @@ class RedisCollector(diamond.collector.Collector):
         """
         return '%s.%s' % (nick, key)
         
-     def _get_additional_info(self, client):
+    def _get_additional_info(self, client):
         """Return additional_info dict from specified Redis instance
 
 :param redisCient: client
